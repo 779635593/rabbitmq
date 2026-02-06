@@ -1,0 +1,12 @@
+{
+  "name": "test/rabbitmq",
+  "require": {
+    "zhuoxin/rabbitmq": "*"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "zhuoxin/rabbitmq",
+  "authors": [
+    {
+      "name": "zhuoxin",
+      "email": "779635593@qq.com"
+    }
+  ],
+  "description": "rabbitMQ操作类库",
+  "keywords": [
+    "rabbitmq",
+    "php",
+    "amqp",
+    "消息队列"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "minimum-stability": "stable",
+  "require": {
+    "php": "^7.2||^8.0",
+    "php-amqplib/php-amqplib": "^3.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "zhuoxin\\rabbitmq\\": "src/"
+    }
+  }
+}
