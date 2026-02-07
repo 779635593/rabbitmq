@@ -10,8 +10,8 @@ use zhuoxin\rabbitmq\RabbitMQProductPool;
 use function Swoole\Coroutine\go;
 use function Swoole\Coroutine\run;
 
-// 协程 发送消息
-// 前提安装swoole拓展
+// 发送消息
+// 协程方式，前提安装 Swoole 拓展
 Runtime::enableCoroutine();
 run(function () {
 	try {
