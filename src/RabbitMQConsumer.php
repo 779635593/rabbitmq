@@ -66,7 +66,7 @@ class RabbitMQConsumer
 			$rabbitMQ = new RabbitMQUtil($channel);
 
 			// 2. 声明交换机、队列+绑定
-			// 延迟时间大于0 作用:1.设置延迟类型交换机
+			// 2.1 延迟时间大于0 作用:1.设置延迟类型交换机
 			if (max(0, $delaySeconds) > 0) {
 				// 交换机类型
 				$exchangeNameType = '延迟交换机';
@@ -75,11 +75,11 @@ class RabbitMQConsumer
 				$exchangeNameType = '即时交换机';
 				$rabbitMQ->declareExchange($exchangeName, $type);
 			}
-			var_dump(sprintf("声明交换机 Success. 交换机类型: %s", $exchangeNameType));
-			// 队列绑定
+			$this->dump(sprintf("声明交换机 Success. 交换机类型: %s", $exchangeNameType));
+			// 2.2 队列绑定
 			$rabbitMQ->declareQueueAndBind($queueName, $exchangeName, $routingKey);
-			var_dump('队列绑定 Success.');
-			var_dump(sprintf("交换机: %s, 路由key: %s, 队列名: %s", $exchangeName, $routingKey, $queueName));
+			$this->dump('队列绑定 Success.');
+			$this->dump(sprintf("交换机: %s, 路由key: %s, 队列名: %s", $exchangeName, $routingKey, $queueName));
 			// 3. 封装通用的消费回调（核心：固定逻辑全在这里）
 			$callback = function (AMQPMessage $AMQPMessage) use (
 				$rabbitMQ,
@@ -99,13 +99,13 @@ class RabbitMQConsumer
 				// 获取消息内容，字符串格式
 				$data = $AMQPMessage->getBody();
 				try {
-					// 业务逻辑回调,参数:消息数据
-					call_user_func($businessCallback, $data);
+					// 业务逻辑回调,参数: 参数1 消息数据, 参数2 已重试次数
+					call_user_func($businessCallback, $data, $retryCount);
 				} catch (\Throwable $e) {
 					// 捕获业务逻辑抛出的异常
 					// 检测重试次数，重试次数+1
 					if ($retryCount++ < $maxRetryCount) {
-						var_dump('正在重试消息，次数:' . $retryCount);
+						$this->dump('重试次数:' . $retryCount);
 						// 重发消息时携带重试次数
 						// 延迟时间大于0 作用:2.重放时设置消息延迟时间
 						if (max(0, $delaySeconds) > 0) {
@@ -115,7 +115,7 @@ class RabbitMQConsumer
 						}
 					} else {
 						// 重试次数超过上限
-						var_dump('重试次数上限');
+						$this->dump('重试次数已达上限');
 					}
 				} finally {
 					// 无论成败，最终都ACK确认，使用重发消息带重试次数消息头进行重放
@@ -123,10 +123,10 @@ class RabbitMQConsumer
 				}
 			};
 			// 4. 启动消费监听（固定逻辑）
-			var_dump('MQ消息监听中...');
+			$this->dump('MQ消息监听中...');
 			$rabbitMQ->startConsumer($queueName, $callback);
 		} catch (\Throwable $e) {
-			var_dump('MQ消息消费异常:' . $e->getMessage());
+			$this->dump('MQ消息消费异常:' . $e->getMessage());
 		} finally {
 			// 5. 最终关闭通道+连接
 			if (isset($rabbitMQChannel) && isset($channel)) {
@@ -136,9 +136,10 @@ class RabbitMQConsumer
 		}
 	}
 
-	// 写入日志
-	public function writeLog($path, ...$ages)
+	// 打印输出
+	private function dump($msg)
 	{
+		var_dump(" =========== " . $msg . " =========== ");
 	}
 
 }

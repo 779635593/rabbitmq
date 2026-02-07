@@ -13,8 +13,8 @@ $routingKey = 'test_delay_route_key';
 $queueName = 'test_delay_queue';
 
 // 消费消息 延迟消息
-// 业务逻辑回调,参数 消息数据
-$businessCallback = function ($data) {
+// 业务逻辑回调,参数: 参数1 消息数据, 参数2 已重试次数
+$businessCallback = function ($data, $retryCount) {
 	try {
 		var_dump('这是逻辑业务');
 		var_dump(json_decode($data, true));
