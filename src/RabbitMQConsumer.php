@@ -64,6 +64,10 @@ class RabbitMQConsumer
 			// 1. 获取MQ通道
 			$channel  = $this->rabbitMQChannel->getChannel();
 			$rabbitMQ = new RabbitMQUtil($channel);
+			$this->dump('队列信息:');
+			$this->dump("交换机     :" . $exchangeName);
+			$this->dump("路由key    :" . $routingKey);
+			$this->dump("队列名     :" . $queueName);
 
 			// 2. 声明交换机、队列+绑定
 			// 2.1 延迟时间大于0 作用:1.设置延迟类型交换机
@@ -75,11 +79,11 @@ class RabbitMQConsumer
 				$exchangeNameType = '即时交换机';
 				$rabbitMQ->declareExchange($exchangeName, $type);
 			}
-			$this->dump(sprintf("声明交换机 Success. 交换机类型: %s", $exchangeNameType));
+			$this->dump("交换机类型 :" . $exchangeNameType);
+			$this->dump('声明交换机 :Success');
 			// 2.2 队列绑定
 			$rabbitMQ->declareQueueAndBind($queueName, $exchangeName, $routingKey);
-			$this->dump('队列绑定 Success.');
-			$this->dump(sprintf("交换机: %s, 路由key: %s, 队列名: %s", $exchangeName, $routingKey, $queueName));
+			$this->dump('队列绑定   :Success');
 			// 3. 封装通用的消费回调（核心：固定逻辑全在这里）
 			$callback = function (AMQPMessage $AMQPMessage) use (
 				$rabbitMQ,
@@ -123,7 +127,7 @@ class RabbitMQConsumer
 				}
 			};
 			// 4. 启动消费监听（固定逻辑）
-			$this->dump('MQ消息监听中...');
+			$this->dump('MQ消息监听中···');
 			$rabbitMQ->startConsumer($queueName, $callback);
 		} catch (\Throwable $e) {
 			$this->dump('MQ消息消费异常:' . $e->getMessage());
@@ -139,7 +143,7 @@ class RabbitMQConsumer
 	// 打印输出
 	private function dump($msg)
 	{
-		var_dump(" =========== " . $msg . " =========== ");
+		echo "-----> " . $msg . PHP_EOL;
 	}
 
 }
