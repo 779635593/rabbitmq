@@ -107,7 +107,6 @@ class RabbitMQChannel
 			} catch (\Throwable $e) {
 				$this->throwException('创建RabbitMQ连接失败:' . $e->getMessage());
 			}
-			echo '连接----';
 		}
 
 		return $this->connection;
