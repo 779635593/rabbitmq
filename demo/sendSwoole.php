@@ -20,12 +20,12 @@ run(function () {
 		$rateChannel = new Channel(50);
 		// 协程屏障
 		$barrier = Barrier::make();
+		// RabbitMQ消息生产者(连接池方式)
+		$rabbitMQProduct = new RabbitMQProductPool();
 		// 交换机：延迟交换机
 		$exchangeName = 'test_delay_exchange';
 		// 交换机绑定的路由key：路由key
 		$routingKey = 'test_delay_route_key';
-		// RabbitMQ消息生产者(连接池方式)
-		$rabbitMQProduct = new RabbitMQProductPool($exchangeName, $routingKey);
 
 		for ($i = 100; $i--;) {
 			$rateChannel->push(true);
@@ -33,7 +33,9 @@ run(function () {
 				$i,
 				$rateChannel,
 				$barrier,
-				$rabbitMQProduct
+				$rabbitMQProduct,
+				$exchangeName,
+				$routingKey
 			) {
 				try {
 					$data = [
@@ -43,7 +45,7 @@ run(function () {
 					// 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
 					$delaySeconds = 2;
 					// 发送消息
-					$res = $rabbitMQProduct->sendMessage($data, $delaySeconds);
+					$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data, $delaySeconds);
 					echo "[$i] 发送结果：" . ($res ? '成功' : '失败') . PHP_EOL;
 					$rateChannel->pop();
 				} catch (Exception $e) {

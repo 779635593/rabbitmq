@@ -12,17 +12,17 @@ try {
 	$routingKey = 'test_delay_route_key';
 
 	// RabbitMQ消息生产者
-	$rabbitMQProduct = new RabbitMQProduct($exchangeName, $routingKey);
+	$rabbitMQProduct = new RabbitMQProduct();
 
 	for ($i = 0; $i < 100; $i++) {
 		$data = [
 			'time' => time(),
-			'data' => '订单号' . 555 . $i,
+			'data' => '订单号' . $i,
 		];
 		// 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
 		$delaySeconds = 2;
 		// 发送消息
-		$res = $rabbitMQProduct->sendMessage($data, $delaySeconds);
+		$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data, $delaySeconds);
 		echo '发送结果：';
 		var_dump($res);
 	}
