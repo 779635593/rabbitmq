@@ -44,7 +44,7 @@ class RabbitMQConsumer
 	 * @param  string    $routingKey        // 路由key
 	 * @param  string    $queueName         // 队列名
 	 * @param  callable  $businessCallback  // 业务逻辑回调,参数1 消息数据，参数2 重试次数
-	 * @param  int       $delaySeconds      // 延迟时间（秒）,（大于0时2个作用:1.设置延迟类型交换机，2.重放时设置消息延迟时间）
+	 * @param  int       $delaySeconds      // 延迟时间（秒）,（大于0时2个作用:1.设置延迟类型交换机，2.重放时设置消息延迟时间。如果延迟时间为0则交换机为即时消息，重放时也立即执行。）
 	 * @param  int       $maxRetryCount     // 最大重试消息次数,默认2
 	 * @param  string    $type              // 交换机类型（默认 direct，支持 topic/fanout）
 	 *
@@ -143,7 +143,7 @@ class RabbitMQConsumer
 	// 打印输出
 	private function dump($msg)
 	{
-		echo "-----> " . $msg . PHP_EOL;
+		echo "----->" . $msg . PHP_EOL;
 	}
 
 }
