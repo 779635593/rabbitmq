@@ -143,7 +143,7 @@ class RabbitMQConsumer
 	// 打印输出
 	private function dump($msg)
 	{
-		echo "----->" . $msg . PHP_EOL;
+		echo "-----▶" . $msg . PHP_EOL;
 	}
 
 }
