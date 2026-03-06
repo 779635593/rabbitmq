@@ -27,7 +27,7 @@ run(function () {
 		// 交换机绑定的路由key：路由key
 		$routingKey = 'test_delay_route_key';
 
-		for ($i = 100; $i--;) {
+		for ($i = 100000; $i--;) {
 			$rateChannel->push(true);
 			go(function () use (
 				$i,
@@ -43,7 +43,7 @@ run(function () {
 						'data' => '延迟订单号' . $i,
 					];
 					// 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
-					$delaySeconds = 2;
+					$delaySeconds = 30;
 					// 发送消息
 					$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data, $delaySeconds);
 					echo "[$i] 发送结果：" . ($res ? '成功' : '失败') . PHP_EOL;

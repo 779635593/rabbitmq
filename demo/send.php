@@ -10,22 +10,25 @@ try {
 	$exchangeName = 'test_delay_exchange';
 	// 交换机绑定的路由key：路由key
 	$routingKey = 'test_delay_route_key';
+	$startTime = microtime(true);
 
 	// RabbitMQ消息生产者
 	$rabbitMQProduct = new RabbitMQProduct();
 
-	for ($i = 0; $i < 100; $i++) {
+	for ($i = 0; $i < 100000; $i++) {
 		$data = [
 			'time' => time(),
 			'data' => '订单号' . $i,
 		];
 		// 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
-		$delaySeconds = 2;
+		$delaySeconds = 30;
 		// 发送消息
 		$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data, $delaySeconds);
-		echo '发送结果：';
-		var_dump($res);
+		echo "[$i] 发送结果：" . ($res ? '成功' : '失败') . PHP_EOL;
 	}
+
+	$endTime = microtime(true);
+	echo "所有消息发送完成，总用时：" . number_format($endTime - $startTime, 3) . "秒" . PHP_EOL;
 
 	echo '关闭';
 } catch (\Exception $e) {
