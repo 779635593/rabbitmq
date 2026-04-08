@@ -4,16 +4,19 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use zhuoxin\rabbitmq\RabbitMQConsumer;
 
-// 声明延迟交换机
-// 交换机：延迟交换机
-$exchangeName = 'test_delay_exchange';
-// 交换机绑定的路由key：路由key
-$routingKey = 'test_delay_route_key';
-// 队列
-$queueName = 'test_delay_queue';
+$exchangeName = 'common.exchange';
+$routingKey   = 'common.test.route_key';
+$queueName    = 'common.test.queue';
+$delayQueue   = [
+	'routingKey'  => 'common.test.delay_route_key',
+	'queueName'   => 'common.test.delay_queue',
+	'queueConfig' => [
+		'ttl' => 10,
+	],
+];
 
 // 消费消息 延迟消息
-// 业务逻辑回调,参数: 参数1 消息数据, 参数2 已重试次数
+// 业务逻辑回调,回调参数：1 消息数据，参数2 重试次数
 $businessCallback = function ($data, $retryCount) {
 	try {
 		var_dump('这是逻辑业务');
@@ -34,7 +37,7 @@ try {
 	                                $routingKey,
 	                                $queueName,
 	                                $businessCallback,
-	                                $delaySeconds = 2
+	                                $delayQueue
 
 	);
 } catch (\Exception $e) {

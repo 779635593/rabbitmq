@@ -6,26 +6,47 @@ use zhuoxin\rabbitmq\RabbitMQProduct;
 
 // 发送消息
 try {
-	// 交换机：延迟交换机
-	$exchangeName = 'test_delay_exchange';
-	// 交换机绑定的路由key：路由key
-	$routingKey = 'test_delay_route_key';
-	$startTime = microtime(true);
+	$exchangeName = 'common.exchange';
+	$routingKey   = 'common.test.route_key';
+	$queueName    = 'common.test.queue';
+	$delayQueue   = [
+		'routingKey'  => 'common.test.delay_route_key',
+		'queueName'   => 'common.test.delay_queue',
+		'queueConfig' => [
+			'ttl' => 6,
+		],
+	];
+	// 延迟队列名
+	$delayQueueName = $delayQueue['queueName'];
+	// 延迟路由key
+	$delayRoutingKey = $delayQueue['routingKey'];
 
+	$startTime = microtime(true);
 	// RabbitMQ消息生产者
 	$rabbitMQProduct = new RabbitMQProduct();
 
-	for ($i = 0; $i < 100000; $i++) {
+	// 即时消息
+	for ($i = 0; $i < 1000; $i++) {
 		$data = [
 			'time' => time(),
-			'data' => '订单号' . $i,
+			'data' => '即时消息' . $i,
 		];
-		// 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
-		$delaySeconds = 30;
 		// 发送消息
-		$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data, $delaySeconds);
+		$res = $rabbitMQProduct->sendMessage($exchangeName, $routingKey, $data);
 		echo "[$i] 发送结果：" . ($res ? '成功' : '失败') . PHP_EOL;
 	}
+
+	// 延迟消息
+	for ($i = 0; $i < 1000; $i++) {
+		$data = [
+			'time' => time(),
+			'data' => '延迟消息' . $i,
+		];
+		// 发送消息
+		$res = $rabbitMQProduct->sendMessage($exchangeName, $delayRoutingKey, $data);
+		echo "[$i] 发送结果：" . ($res ? '成功' : '失败') . PHP_EOL;
+	}
+
 
 	$endTime = microtime(true);
 	echo "所有消息发送完成，总用时：" . number_format($endTime - $startTime, 3) . "秒" . PHP_EOL;

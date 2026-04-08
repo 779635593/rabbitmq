@@ -17,12 +17,8 @@ use PhpAmqpLib\{
 class RabbitMQUtil
 {
 
-	/**
-	 * Channel通道
-	 *
-	 * @var AMQPChannel
-	 */
-	private $channel;
+	// Channel通道
+	private AMQPChannel $channel;
 
 	/**
 	 * @param  AMQPChannel  $channel  // 通道
@@ -37,12 +33,11 @@ class RabbitMQUtil
 	 *
 	 * @param  string  $exchangeName  // 交换机名
 	 * @param  string  $type          // 交换机类型（默认 direct，支持 topic/fanout）
-	 * @param  bool    $durable       // 是否持久化（默认 true）
 	 *
 	 * @return void
 	 * @throws \Exception
 	 */
-	public function declareExchange(string $exchangeName, string $type = 'direct', bool $durable = true)
+	public function declareExchange(string $exchangeName, string $type = 'direct')
 	{
 		// 获取通道
 		$channel = $this->channel;
@@ -50,38 +45,8 @@ class RabbitMQUtil
 			$exchangeName,
 			$type,
 			false,
-			$durable,
-			false
-		);
-	}
-
-	/**
-	 * 声明延迟交换机（x-delayed-message 类型）
-	 *
-	 * @param  string  $exchangeName  // 交换机名
-	 * @param  string  $delayedType   // 底层交换机类型（默认 direct，支持 topic/fanout）
-	 * @param  bool    $durable       // 是否持久化（默认 true）
-	 *
-	 * @return void
-	 * @throws \Exception
-	 */
-	public function declareExchangeDelay(string $exchangeName, string $delayedType = 'direct', bool $durable = true)
-	{
-		// 获取通道
-		$channel   = $this->channel;
-		$delayArgs = new AMQPTable([
-			                           'x-delayed-type' => $delayedType,
-		                           ]);
-		// 声明延迟交换机
-		$channel->exchange_declare(
-			$exchangeName,
-			'x-delayed-message',
+			true,
 			false,
-			$durable,
-			false,
-			false,
-			false,
-			$delayArgs
 		);
 	}
 
@@ -91,12 +56,12 @@ class RabbitMQUtil
 	 * @param  string  $queueName     // 队列名
 	 * @param  string  $exchangeName  // 交换机名
 	 * @param  string  $routingKey    // 路由键
-	 * @param  bool    $durable       // 队列是否持久化（默认 true）
+	 * @param  array   $arguments     // 扩展参数。用于传递 TTL、死信、长度限制等高级功能。TTL+DLX 的核心配置入口
 	 *
 	 * @return void
 	 * @throws \Exception
 	 */
-	public function declareQueueAndBind(string $queueName, string $exchangeName, string $routingKey, bool $durable = true)
+	public function declareQueueAndBind(string $queueName, string $exchangeName, string $routingKey, array $arguments = [])
 	{
 		// 获取通道
 		$channel = $this->channel;
@@ -104,9 +69,11 @@ class RabbitMQUtil
 		$channel->queue_declare(
 			$queueName,
 			false,
-			$durable,
+			true,
 			false,
-			false
+			false,
+			false,
+			new AMQPTable($arguments),
 		);
 		// 队列与交换机绑定
 		$channel->queue_bind($queueName, $exchangeName, $routingKey);
@@ -155,28 +122,6 @@ class RabbitMQUtil
 	}
 
 	/**
-	 * 发送延迟消息
-	 *
-	 * @param  string  $exchangeName     // 交换机名
-	 * @param  string  $routingKey       // 路由键
-	 * @param          $message          // 消息内容（推荐字符串格式，数组自动转json_encode）
-	 * @param  int     $delaySeconds     // 延迟时间（秒）【交换机需是延迟类型，否则为即时消息】
-	 * @param  array   $msgHeaders       // 额外消息头属性（可选）
-	 * @param  array   $extraProperties  // 额外消息属性（可选）
-	 * @param  float   $timeout          // 发布确认超时时间（默认 5 秒）
-	 *
-	 * @return true|null
-	 * @throws \Exception
-	 */
-	public function sendMessageDelay(string $exchangeName, string $routingKey, $message, int $delaySeconds, array $msgHeaders = [], array $extraProperties = [], float $timeout = 5.0): ?bool
-	{
-		// 设置消息头属性,追加延迟属性(不可覆盖)
-		$msgHeaders = array_merge($msgHeaders, ['x-delay' => $delaySeconds * 1000]);
-
-		return $this->sendMessage($exchangeName, $routingKey, $message, $msgHeaders, $extraProperties, $timeout);
-	}
-
-	/**
 	 * 启动消费者监听（带手动 ACK、公平调度）
 	 *  $callback = function (AMQPMessage $msg) {
 	 *       echo '开始处理...';
@@ -212,7 +157,7 @@ class RabbitMQUtil
 				false, // no_ack = false 开启手动 ACK
 				false,
 				false,
-				$callback
+				$callback,
 			);
 			// 开始监听消费
 			$channel->consume();

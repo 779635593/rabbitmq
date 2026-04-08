@@ -11,7 +11,7 @@ class RabbitMQProductPool
 {
 
 	// 连接池
-	private $connectionPool;
+	private \Swoole\ConnectionPool $connectionPool;
 
 	/**
 	 * RabbitMQ消息生产者(连接池方式)

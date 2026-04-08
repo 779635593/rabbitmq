@@ -12,19 +12,15 @@ class RabbitMQChannel
 {
 
 	// RabbitMQ 默认配置
-	private $config = [
+	private array $config = [
 		'host' => 'localhost',
 		'port' => 5672,
 		'user' => 'guest',
 		'pass' => 'guest',
 	];
 
-	/**
-	 * 对象内部连接
-	 *
-	 * @var AMQPStreamConnection
-	 */
-	private $connection = null;
+	// 对象内部连接
+	private ?AMQPStreamConnection $connection = null;
 
 	/**
 	 * 通道类
