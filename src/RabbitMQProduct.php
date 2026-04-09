@@ -2,6 +2,7 @@
 
 namespace zhuoxin\rabbitmq;
 
+use PhpAmqpLib\Channel\AMQPChannel;
 use zhuoxin\rabbitmq\util\RabbitMQChannel;
 use zhuoxin\rabbitmq\util\RabbitMQUtil;
 
@@ -13,7 +14,7 @@ class RabbitMQProduct
 	private RabbitMQChannel $rabbitMQChannel;
 
 	// 通道
-	private \PhpAmqpLib\Channel\AMQPChannel $channel;
+	private AMQPChannel $channel;
 
 	// RabbitMQ工具类
 	private RabbitMQUtil $rabbitMQUtil;

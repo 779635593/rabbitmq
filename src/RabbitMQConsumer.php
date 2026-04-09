@@ -114,7 +114,7 @@ class RabbitMQConsumer
 				$this->dump("延迟时间    :" . $delayQueueConfig['ttl'] . '秒');
 			}
 
-			// 3. 封装通用的消费回调（核心：固定逻辑全在这里）
+			// 3. 消费回调（核心：逻辑全在这里）
 			$callback = function (AMQPMessage $AMQPMessage) use (
 				$rabbitMQ,
 				$exchangeName,

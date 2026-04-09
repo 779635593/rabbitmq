@@ -21,6 +21,8 @@ class RabbitMQUtil
 	private AMQPChannel $channel;
 
 	/**
+	 * 初始化传入通道
+	 *
 	 * @param  AMQPChannel  $channel  // 通道
 	 */
 	public function __construct(AMQPChannel $channel)
@@ -63,10 +65,8 @@ class RabbitMQUtil
 	 */
 	public function declareQueueAndBind(string $queueName, string $exchangeName, string $routingKey, array $arguments = [])
 	{
-		// 获取通道
-		$channel = $this->channel;
 		// 声明队列
-		$channel->queue_declare(
+		$this->channel->queue_declare(
 			$queueName,
 			false,
 			true,
@@ -76,29 +76,27 @@ class RabbitMQUtil
 			new AMQPTable($arguments),
 		);
 		// 队列与交换机绑定
-		$channel->queue_bind($queueName, $exchangeName, $routingKey);
+		$this->channel->queue_bind($queueName, $exchangeName, $routingKey);
 	}
 
 	/**
 	 * 发送消息（带发布确认）
 	 * 设置消息头属性,追加 重试次数 retry_count 属性(默认0，可覆盖)
 	 *
-	 * @param  string  $exchangeName     // 交换机名
-	 * @param  string  $routingKey       // 路由键
-	 * @param          $message          // 消息内容（推荐字符串格式，数组自动转json_encode）
-	 * @param  array   $msgHeaders       // 额外消息头属性（可选）
-	 * @param  array   $extraProperties  // 额外消息属性（可选）
-	 * @param  float   $timeout          // 发布确认超时时间（默认 5 秒）
+	 * @param  string        $exchangeName     // 交换机名
+	 * @param  string        $routingKey       // 路由键
+	 * @param  string|array  $message          // 消息内容（推荐字符串格式，数组自动转json_encode）
+	 * @param  array         $msgHeaders       // 额外消息头属性（可选）
+	 * @param  array         $extraProperties  // 额外消息属性（可选）
+	 * @param  float         $timeout          // 发布确认超时时间（默认 5 秒）
 	 *
 	 * @return true|void
 	 * @throws \Exception
 	 */
 	public function sendMessage(string $exchangeName, string $routingKey, $message, array $msgHeaders = [], array $extraProperties = [], float $timeout = 5.0)
 	{
-		// 获取通道
-		$channel = $this->channel;
 		try {
-			// 消息内容数组转json字符串
+			// 数组消息转json字符串
 			if (is_array($message)) {
 				$message = json_encode($message, JSON_UNESCAPED_UNICODE);
 			}
@@ -111,9 +109,9 @@ class RabbitMQUtil
 			$AMQPMessage = new AMQPMessage($message, $msgProperties);
 			$AMQPMessage->set("application_headers", new AMQPTable($msgHeaders));
 			// 发布消息
-			$channel->basic_publish($AMQPMessage, $exchangeName, $routingKey);
+			$this->channel->basic_publish($AMQPMessage, $exchangeName, $routingKey);
 			// 等待发布确认
-			$channel->wait_for_pending_acks($timeout);
+			$this->channel->wait_for_pending_acks($timeout);
 
 			return true;
 		} catch (\Throwable $e) {
@@ -144,13 +142,11 @@ class RabbitMQUtil
 	 */
 	public function startConsumer(string $queueName, callable $callback, int $prefetchCount = 1)
 	{
-		// 获取通道
-		$channel = $this->channel;
 		try {
 			// 公平调度：只给空闲消费者分发新消息
-			$channel->basic_qos(0, $prefetchCount, false);
+			$this->channel->basic_qos(0, $prefetchCount, false);
 			// 注册消费回调（手动 ACK 模式）
-			$channel->basic_consume(
+			$this->channel->basic_consume(
 				$queueName,
 				'',
 				false,
@@ -160,7 +156,7 @@ class RabbitMQUtil
 				$callback,
 			);
 			// 开始监听消费
-			$channel->consume();
+			$this->channel->consume();
 		} catch (\Throwable $e) {
 			$this->throwException("消费监听异常：" . $e->getMessage());
 		}

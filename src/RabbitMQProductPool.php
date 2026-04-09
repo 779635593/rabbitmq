@@ -38,7 +38,6 @@ class RabbitMQProductPool
 	 * @param  string  $exchangeName     // 交换机
 	 * @param  string  $routingKey       // 路由key
 	 * @param          $message          // 消息内容（推荐字符串格式，数组自动转json_encode）
-	 * @param  int     $delaySeconds     // 延迟时间（秒）,（大于0时设置消息延迟时间【交换机需是延迟类型，否则为即时消息】）
 	 * @param  array   $msgHeaders       // 额外消息头属性（可选）
 	 * @param  array   $extraProperties  // 额外消息属性（可选）
 	 * @param  float   $timeout          // 发布确认超时时间（默认 5 秒）
@@ -46,7 +45,7 @@ class RabbitMQProductPool
 	 * @return bool|null
 	 * @throws \Exception
 	 */
-	public function sendMessage(string $exchangeName, string $routingKey, $message, int $delaySeconds = 0, array $msgHeaders = [], array $extraProperties = [], float $timeout = 5.0): ?bool
+	public function sendMessage(string $exchangeName, string $routingKey, $message, array $msgHeaders = [], array $extraProperties = [], float $timeout = 5.0): ?bool
 	{
 		$rabbitMQChannel = null;
 		$channel         = null;
@@ -60,12 +59,7 @@ class RabbitMQProductPool
 			// 获取rabbitMQ通道
 			$channel      = $rabbitMQChannel->getChannel();
 			$rabbitMQUtil = new RabbitMQUtil($channel);
-			// 延迟时间（秒）,（大于0时则设置的消息延迟时间【交换机需是延迟类型，否则为即时消息】）
-			if (max(0, $delaySeconds) > 0) {
-				$sendResult = $rabbitMQUtil->sendMessageDelay($exchangeName, $routingKey, $message, $delaySeconds, $msgHeaders, $extraProperties, $timeout);
-			} else {
-				$sendResult = $rabbitMQUtil->sendMessage($exchangeName, $routingKey, $message, $msgHeaders, $extraProperties, $timeout);
-			}
+			$sendResult   = $rabbitMQUtil->sendMessage($exchangeName, $routingKey, $message, $msgHeaders, $extraProperties, $timeout);
 		} catch (\Throwable $e) {
 			throw new \Exception('MQ发送消息错误：' . $e->getMessage());
 		} finally {
@@ -77,7 +71,6 @@ class RabbitMQProductPool
 			if ($connection) {
 				$this->connectionPool->put($connection);
 			}
-			echo 'MQ关闭通道和归还连接OK';
 		}
 
 		return $sendResult;

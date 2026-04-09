@@ -7,6 +7,7 @@ use zhuoxin\rabbitmq\RabbitMQConsumer;
 $exchangeName = 'common.exchange';
 $routingKey   = 'common.test.route_key';
 $queueName    = 'common.test.queue';
+// 延迟队列配置
 $delayQueue   = [
 	'routingKey'  => 'common.test.delay_route_key',
 	'queueName'   => 'common.test.delay_queue',

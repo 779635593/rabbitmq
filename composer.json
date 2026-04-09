@@ -17,7 +17,7 @@
   "license": "MIT",
   "minimum-stability": "stable",
   "require": {
-    "php": "^7.2||^8.0",
+    "php": "^7.4",
     "ext-json": "*",
     "php-amqplib/php-amqplib": "^3.7"
   },

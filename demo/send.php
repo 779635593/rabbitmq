@@ -26,7 +26,7 @@ try {
 	$rabbitMQProduct = new RabbitMQProduct();
 
 	// 即时消息
-	for ($i = 0; $i < 1000; $i++) {
+	for ($i = 0; $i < 2; $i++) {
 		$data = [
 			'time' => time(),
 			'data' => '即时消息' . $i,
@@ -37,7 +37,7 @@ try {
 	}
 
 	// 延迟消息
-	for ($i = 0; $i < 1000; $i++) {
+	for ($i = 0; $i < 2; $i++) {
 		$data = [
 			'time' => time(),
 			'data' => '延迟消息' . $i,
